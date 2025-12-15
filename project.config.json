@@ -45,7 +45,7 @@
   },
   "compileType": "miniprogram",
   "libVersion": "2.19.4",
-  "appid": "wx3c8b081286555b0d",
+  "appid": "your-appid-here",
   "projectname": "task-manager",
   "condition": {
     "search": {
