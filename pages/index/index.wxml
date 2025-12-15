@@ -1,0 +1,313 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 时间规划表 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="section-title-text">时间规划表</text>
+      <button class="btn btn-info text-xs" bindtap="showAddTimePlanModal">
+        <text class="icon icon-sm">+</text> 添加
+      </button>
+    </view>
+    <view class="card">
+      <view class="grid grid-cols-2 gap-3 mb-4">
+        <!-- 工作时间 -->
+        <view class="bg-gray-100 p-3 rounded text-center">
+          <text class="text-sm font-medium mb-1">工作时间</text>
+          <view class="text-2xl font-bold text-primary mb-2">{{workTimeTotal}}h</view>
+          <view class="mt-2 flex flex-center">
+            <button class="btn btn-success text-xs mr-2" bindtap="startWorkTimer" disabled="{{workTimerRunning}}">
+              ▶ 开始
+            </button>
+            <button class="btn btn-danger text-xs" bindtap="stopWorkTimer" disabled="{{!workTimerRunning}}">
+              ⏹ 结束
+            </button>
+          </view>
+        </view>
+        <!-- 学习时间 -->
+        <view class="bg-gray-100 p-3 rounded text-center">
+          <text class="text-sm font-medium mb-1">学习时间</text>
+          <view class="text-2xl font-bold text-secondary mb-2">{{studyTimeTotal}}h</view>
+          <view class="mt-2 flex flex-center">
+            <button class="btn btn-success text-xs mr-2" bindtap="startStudyTimer" disabled="{{studyTimerRunning}}">
+              ▶ 开始
+            </button>
+            <button class="btn btn-danger text-xs" bindtap="stopStudyTimer" disabled="{{!studyTimerRunning}}">
+              ⏹ 结束
+            </button>
+          </view>
+        </view>
+      </view>
+      <!-- 时间规划列表 -->
+      <view class="space-y-2">
+        <view wx:for="{{timePlans}}" wx:key="id" class="flex flex-between items-center p-2 bg-gray-100 rounded">
+          <view class="flex items-center">
+            <text class="tag {{item.type === 'work' ? 'tag-primary' : 'tag-secondary'}}">{{item.type === 'work' ? '工作' : '学习'}}</text>
+            <text class="text-xs">{{item.title}}</text>
+          </view>
+          <text class="text-xs font-medium">{{item.display}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 今日任务栏 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="section-title-text">今日任务栏</text>
+      <button class="btn btn-secondary text-xs" bindtap="showAddProjectModal">
+        <text class="icon icon-sm">+</text> 添加
+      </button>
+    </view>
+    <view class="card">
+      <view wx:for="{{projects}}" wx:key="id" class="p-2 bg-gray-100 rounded mb-3">
+        <view class="flex flex-between items-center mb-2">
+          <text class="text-sm font-medium">{{item.title}}</text>
+          <text class="tag tag-success">{{item.status}}</text>
+        </view>
+        <view class="space-y-2">
+          <view wx:for="{{item.tasks}}" wx:for-item="task" wx:key="id" class="flex items-center">
+            <checkbox checked="{{task.completed}}" bindchange="toggleTask" data-project-id="{{item.id}}" data-task-id="{{task.id}}" class="mr-2"/>
+            <text class="text-xs {{task.completed ? 'line-through text-gray-500' : ''}}">{{task.title}}</text>
+          </view>
+        </view>
+        <view class="mt-2 flex flex-end">
+          <button class="text-xs text-primary mr-2" bindtap="showAddTaskModal" data-project-id="{{item.id}}">
+            + 添加任务
+          </button>
+          <button class="text-xs text-danger" bindtap="deleteProject" data-project-id="{{item.id}}">
+            删除
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 三级任务管理 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="section-title-text">三级任务管理</text>
+      <button class="btn btn-primary text-xs" bindtap="showAddLevel1Modal">
+        <text class="icon icon-sm">+</text> 添加一级
+      </button>
+    </view>
+    <view class="card">
+      <view wx:for="{{level1Tasks}}" wx:key="id" class="level1-item mb-4">
+        <view class="flex flex-between items-center p-2 bg-primary bg-opacity-20 rounded">
+          <view class="flex items-center">
+            <text class="icon mr-2">📁</text>
+            <text class="text-sm font-medium">{{item.title}}</text>
+          </view>
+          <view class="flex space-x-2">
+            <button class="text-primary" bindtap="editLevel1" data-id="{{item.id}}">✏️</button>
+            <button class="text-danger" bindtap="deleteLevel1" data-id="{{item.id}}">🗑️</button>
+          </view>
+        </view>
+        <view class="ml-6 mt-2 space-y-3">
+          <view wx:for="{{item.level2Tasks}}" wx:for-item="level2" wx:key="id" class="level2-item mb-3">
+            <view class="flex flex-between items-center p-2 bg-secondary bg-opacity-20 rounded">
+              <view class="flex items-center">
+                <text class="icon mr-2">📂</text>
+                <text class="text-sm font-medium">{{level2.title}}</text>
+              </view>
+              <view class="flex space-x-2">
+                <button class="text-secondary" bindtap="editLevel2" data-level1-id="{{item.id}}" data-level2-id="{{level2.id}}">✏️</button>
+                <button class="text-danger" bindtap="deleteLevel2" data-level1-id="{{item.id}}" data-level2-id="{{level2.id}}">🗑️</button>
+              </view>
+            </view>
+            <view class="ml-6 mt-2 space-y-2">
+              <view wx:for="{{level2.level3Tasks}}" wx:for-item="level3" wx:key="id" class="flex items-center flex-between p-2 bg-gray-100 rounded">
+                <view class="flex items-center">
+                  <checkbox checked="{{level3.completed}}" bindchange="toggleLevel3" data-level1-id="{{item.id}}" data-level2-id="{{level2.id}}" data-level3-id="{{level3.id}}" class="mr-2"/>
+                  <text class="text-xs {{level3.completed ? 'line-through text-gray-500' : ''}}">{{level3.title}}</text>
+                </view>
+                <view class="flex space-x-2">
+                  <button class="text-warning" bindtap="editLevel3" data-level1-id="{{item.id}}" data-level2-id="{{level2.id}}" data-level3-id="{{level3.id}}">✏️</button>
+                  <button class="text-danger" bindtap="deleteLevel3" data-level1-id="{{item.id}}" data-level2-id="{{level2.id}}" data-level3-id="{{level3.id}}">🗑️</button>
+                  <button class="text-primary" bindtap="addToToday" data-level3-title="{{level3.title}}">➡️</button>
+                </view>
+              </view>
+              <view class="flex flex-between items-center p-2">
+                <button class="text-xs text-primary" bindtap="showAddLevel3Modal" data-level1-id="{{item.id}}" data-level2-id="{{level2.id}}">
+                  + 添加SOP步骤
+                </button>
+              </view>
+            </view>
+          </view>
+          <view class="flex flex-between items-center p-2">
+            <button class="text-xs text-secondary" bindtap="showAddLevel2Modal" data-level1-id="{{item.id}}">
+              + 添加二级项目
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 日历规划 -->
+  <view class="section">
+    <view class="section-title">
+      <text class="section-title-text">日历规划</text>
+      <view class="flex space-x-2">
+        <button class="text-gray" bindtap="prevMonth">‹</button>
+        <text class="text-sm font-medium">{{calendarDisplayDate}}</text>
+        <button class="text-gray" bindtap="nextMonth">›</button>
+      </view>
+    </view>
+    <view class="card">
+      <view class="grid grid-cols-7 gap-1 text-center mb-2">
+        <text class="text-xs font-medium text-gray-500">日</text>
+        <text class="text-xs font-medium text-gray-500">一</text>
+        <text class="text-xs font-medium text-gray-500">二</text>
+        <text class="text-xs font-medium text-gray-500">三</text>
+        <text class="text-xs font-medium text-gray-500">四</text>
+        <text class="text-xs font-medium text-gray-500">五</text>
+        <text class="text-xs font-medium text-gray-500">六</text>
+      </view>
+      <view class="grid grid-cols-7 gap-1 text-center">
+        <view wx:for="{{calendarDays}}" wx:key="index" 
+              class="text-xs p-2 {{item.isCurrentMonth ? '' : 'text-gray-500'}} {{item.isToday ? 'bg-primary text-white rounded-full' : ''}}"
+              bindtap="selectDate" data-date="{{item.date}}">
+          {{item.day}}
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 添加时间规划弹窗 -->
+<view wx:if="{{showTimePlanModal}}" class="modal" bindtap="hideAddTimePlanModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">添加时间规划</text>
+      <text class="modal-close" bindtap="hideAddTimePlanModal">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="form-label">类型</text>
+        <picker range="{{timePlanTypes}}" value="{{timePlanTypeIndex}}" bindchange="onTimePlanTypeChange">
+          <view class="picker">{{timePlanTypes[timePlanTypeIndex]}}</view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">标题</text>
+        <input class="form-input" placeholder="请输入标题" value="{{timePlanTitle}}" bindinput="onTimePlanTitleInput"/>
+      </view>
+      <view class="form-item">
+        <text class="form-label">开始时间</text>
+        <picker mode="time" value="{{timePlanStartTime}}" bindchange="onTimePlanStartTimeChange">
+          <view class="picker">{{timePlanStartTime || '选择开始时间'}}</view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">结束时间</text>
+        <picker mode="time" value="{{timePlanEndTime}}" bindchange="onTimePlanEndTimeChange">
+          <view class="picker">{{timePlanEndTime || '选择结束时间'}}</view>
+        </picker>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="btn btn-primary" bindtap="confirmAddTimePlan">确定</button>
+      <button class="btn" bindtap="hideAddTimePlanModal">取消</button>
+    </view>
+  </view>
+</view>
+
+<!-- 添加项目弹窗 -->
+<view wx:if="{{showProjectModal}}" class="modal" bindtap="hideAddProjectModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">添加项目</text>
+      <text class="modal-close" bindtap="hideAddProjectModal">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="form-label">项目名称</text>
+        <input class="form-input" placeholder="请输入项目名称" value="{{projectTitle}}" bindinput="onProjectTitleInput"/>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="btn btn-primary" bindtap="confirmAddProject">确定</button>
+      <button class="btn" bindtap="hideAddProjectModal">取消</button>
+    </view>
+  </view>
+</view>
+
+<!-- 添加任务弹窗 -->
+<view wx:if="{{showTaskModal}}" class="modal" bindtap="hideAddTaskModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">添加任务</text>
+      <text class="modal-close" bindtap="hideAddTaskModal">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="form-label">任务名称</text>
+        <input class="form-input" placeholder="请输入任务名称" value="{{taskTitle}}" bindinput="onTaskTitleInput"/>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="btn btn-primary" bindtap="confirmAddTask">确定</button>
+      <button class="btn" bindtap="hideAddTaskModal">取消</button>
+    </view>
+  </view>
+</view>
+
+<!-- 添加一级任务弹窗 -->
+<view wx:if="{{showLevel1Modal}}" class="modal" bindtap="hideAddLevel1Modal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">添加一级任务</text>
+      <text class="modal-close" bindtap="hideAddLevel1Modal">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="form-label">名称</text>
+        <input class="form-input" placeholder="请输入名称" value="{{level1Title}}" bindinput="onLevel1TitleInput"/>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="btn btn-primary" bindtap="confirmAddLevel1">确定</button>
+      <button class="btn" bindtap="hideAddLevel1Modal">取消</button>
+    </view>
+  </view>
+</view>
+
+<!-- 添加二级任务弹窗 -->
+<view wx:if="{{showLevel2Modal}}" class="modal" bindtap="hideAddLevel2Modal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">添加二级任务</text>
+      <text class="modal-close" bindtap="hideAddLevel2Modal">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="form-label">名称</text>
+        <input class="form-input" placeholder="请输入名称" value="{{level2Title}}" bindinput="onLevel2TitleInput"/>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="btn btn-primary" bindtap="confirmAddLevel2">确定</button>
+      <button class="btn" bindtap="hideAddLevel2Modal">取消</button>
+    </view>
+  </view>
+</view>
+
+<!-- 添加三级任务弹窗 -->
+<view wx:if="{{showLevel3Modal}}" class="modal" bindtap="hideAddLevel3Modal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">添加SOP步骤</text>
+      <text class="modal-close" bindtap="hideAddLevel3Modal">×</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="form-label">步骤名称</text>
+        <input class="form-input" placeholder="请输入步骤名称" value="{{level3Title}}" bindinput="onLevel3TitleInput"/>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="btn btn-primary" bindtap="confirmAddLevel3">确定</button>
+      <button class="btn" bindtap="hideAddLevel3Modal">取消</button>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "pages/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "任务管理",
+    "navigationBarBackgroundColor": "#f5f5f5",
+    "backgroundColor": "#f5f5f5"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
