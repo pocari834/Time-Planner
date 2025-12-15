@@ -9,8 +9,8 @@ import { getCurrentTimeInMinutes } from '../../utils/time.js'
 Page({
   data: {
     // 计时器相关
-    workTimeTotal: '0.0',
-    studyTimeTotal: '0.0',
+    workTimeTotal: '0秒',
+    studyTimeTotal: '0秒',
     workTimerRunning: false,
     studyTimerRunning: false,
     
@@ -122,18 +122,27 @@ Page({
    * 开始计时器更新
    */
   startTimerUpdate() {
-    timerService.onUpdate = (type, total) => {
+    // 如果已经有定时器在运行，先清除
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval)
+      this.timerInterval = null
+    }
+    
+    timerService.onUpdate = (type, totalMinutes) => {
+      // 使用智能格式显示时间（秒/分钟/小时）
+      const formatted = timerService.getFormattedTotalSmart(type)
       if (type === 'work') {
         this.setData({
-          workTimeTotal: total
+          workTimeTotal: formatted
         })
       } else if (type === 'study') {
         this.setData({
-          studyTimeTotal: total
+          studyTimeTotal: formatted
         })
       }
     }
     
+    // 每秒更新一次显示
     this.timerInterval = setInterval(() => {
       this.updateTimerDisplay()
     }, 1000)
@@ -165,49 +174,143 @@ Page({
 
   // ========== 计时器相关 ==========
   startWorkTimer() {
-    if (timerService.startTimer('work')) {
+    console.log('开始工作计时', this.data.workTimerRunning)
+    if (this.data.workTimerRunning) {
+      return
+    }
+    const result = timerService.startTimer('work')
+    console.log('startTimer result:', result)
+    if (result) {
       this.updateTimerDisplay()
+      // 确保定时器继续运行
+      if (!this.timerInterval) {
+        this.startTimerUpdate()
+      }
       wx.showToast({
         title: '开始工作计时',
         icon: 'success',
+        duration: 1000
+      })
+    } else {
+      wx.showToast({
+        title: '计时器已在运行',
+        icon: 'none',
         duration: 1000
       })
     }
   },
 
   stopWorkTimer() {
+    console.log('停止工作计时', this.data.workTimerRunning)
+    if (!this.data.workTimerRunning) {
+      return
+    }
     const duration = timerService.stopTimer('work')
-    if (duration !== false) {
+    console.log('stopTimer duration:', duration)
+    if (duration !== false && duration !== null) {
       this.updateTimerDisplay()
       wx.showToast({
-        title: `工作 ${(duration / 60).toFixed(1)} 小时`,
+        title: `工作 ${timerService.getFormattedTotalSmart('work')}`,
         icon: 'success',
-        duration: 1000
+        duration: 1500
       })
     }
   },
 
   startStudyTimer() {
-    if (timerService.startTimer('study')) {
+    console.log('开始学习计时', this.data.studyTimerRunning)
+    if (this.data.studyTimerRunning) {
+      return
+    }
+    const result = timerService.startTimer('study')
+    console.log('startTimer result:', result)
+    if (result) {
       this.updateTimerDisplay()
+      // 确保定时器继续运行
+      if (!this.timerInterval) {
+        this.startTimerUpdate()
+      }
       wx.showToast({
         title: '开始学习计时',
         icon: 'success',
+        duration: 1000
+      })
+    } else {
+      wx.showToast({
+        title: '计时器已在运行',
+        icon: 'none',
         duration: 1000
       })
     }
   },
 
   stopStudyTimer() {
+    console.log('停止学习计时', this.data.studyTimerRunning)
+    if (!this.data.studyTimerRunning) {
+      return
+    }
     const duration = timerService.stopTimer('study')
-    if (duration !== false) {
+    console.log('stopTimer duration:', duration)
+    if (duration !== false && duration !== null) {
       this.updateTimerDisplay()
       wx.showToast({
-        title: `学习 ${(duration / 60).toFixed(1)} 小时`,
+        title: `学习 ${timerService.getFormattedTotalSmart('study')}`,
         icon: 'success',
-        duration: 1000
+        duration: 1500
       })
     }
+  },
+
+  resetWorkTimer() {
+    if (this.data.workTimerRunning) {
+      wx.showToast({
+        title: '请先停止计时',
+        icon: 'none',
+        duration: 1500
+      })
+      return
+    }
+    wx.showModal({
+      title: '确认重置',
+      content: '确定要重置工作时间吗？',
+      success: (res) => {
+        if (res.confirm) {
+          timerService.resetTimer('work')
+          this.updateTimerDisplay()
+          wx.showToast({
+            title: '已重置',
+            icon: 'success',
+            duration: 1000
+          })
+        }
+      }
+    })
+  },
+
+  resetStudyTimer() {
+    if (this.data.studyTimerRunning) {
+      wx.showToast({
+        title: '请先停止计时',
+        icon: 'none',
+        duration: 1500
+      })
+      return
+    }
+    wx.showModal({
+      title: '确认重置',
+      content: '确定要重置学习时间吗？',
+      success: (res) => {
+        if (res.confirm) {
+          timerService.resetTimer('study')
+          this.updateTimerDisplay()
+          wx.showToast({
+            title: '已重置',
+            icon: 'success',
+            duration: 1000
+          })
+        }
+      }
+    })
   },
 
   // ========== 时间规划相关 ==========

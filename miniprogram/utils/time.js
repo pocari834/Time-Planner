@@ -17,6 +17,36 @@ export function formatHours(totalMinutes) {
 }
 
 /**
+ * 格式化时间为秒/分钟/小时（智能显示）
+ */
+export function formatTimeSmart(totalMinutes) {
+  const totalSeconds = Math.floor(totalMinutes * 60)
+  
+  if (totalSeconds < 60) {
+    // 小于1分钟，显示秒
+    return `${totalSeconds}秒`
+  } else if (totalMinutes < 60) {
+    // 小于1小时，显示分钟
+    const minutes = Math.floor(totalMinutes)
+    const seconds = totalSeconds % 60
+    if (seconds === 0) {
+      return `${minutes}分钟`
+    } else {
+      return `${minutes}分${seconds}秒`
+    }
+  } else {
+    // 大于等于1小时，显示小时和分钟
+    const hours = Math.floor(totalMinutes / 60)
+    const minutes = Math.floor(totalMinutes % 60)
+    if (minutes === 0) {
+      return `${hours}小时`
+    } else {
+      return `${hours}小时${minutes}分钟`
+    }
+  }
+}
+
+/**
  * 格式化时间段显示
  */
 export function formatTimeRange(startTime, endTime) {

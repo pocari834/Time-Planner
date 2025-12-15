@@ -159,7 +159,15 @@ page {
   box-shadow: 2rpx 2rpx 0 #9333ea, inset 1rpx 1rpx 0 rgba(255, 255, 255, 0.4);
 }
 
-.btn-disabled,
+.btn-disabled {
+  background-color: #e9d5ff !important;
+  color: #c084fc !important;
+  border-color: #d8b4fe #f3e8ff #f3e8ff #d8b4fe !important;
+  box-shadow: 1rpx 1rpx 0 #c084fc !important;
+  opacity: 0.6 !important;
+  pointer-events: none;
+}
+
 button[disabled] {
   background-color: #e9d5ff !important;
   color: #c084fc !important;
@@ -234,7 +242,7 @@ button[disabled] {
 }
 
 .text-md {
-  font-size: 28rpx;
+  font-size: 26rpx;
 }
 
 .text-lg {
@@ -242,12 +250,16 @@ button[disabled] {
 }
 
 .text-xl {
-  font-size: 36rpx;
+  font-size: 32rpx;
 }
 
 .text-2xl {
-  font-size: 40rpx;
+  font-size: 36rpx;
   font-weight: bold;
+}
+
+.text-lg {
+  font-size: 28rpx;
 }
 
 .text-gray {
@@ -338,6 +350,10 @@ button[disabled] {
 
 .grid-cols-2 {
   grid-template-columns: repeat(2, 1fr);
+}
+
+.flex-1 {
+  flex: 1;
 }
 
 .grid-cols-7 {

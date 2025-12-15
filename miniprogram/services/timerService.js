@@ -1,7 +1,7 @@
 // services/timerService.js - 计时器服务
 
 import { saveData, loadData, STORAGE_KEYS } from '../utils/storage.js'
-import { getCurrentTimeInMinutes, formatHours } from '../utils/time.js'
+import { getCurrentTimeInMinutes, formatHours, formatTimeSmart } from '../utils/time.js'
 
 class TimerService {
   constructor() {
@@ -10,8 +10,8 @@ class TimerService {
       study: null
     }
     this.state = {
-      work: { running: false, startTime: null, totalMinutes: 0 },
-      study: { running: false, startTime: null, totalMinutes: 0 }
+      work: { running: false, startTime: null, totalSeconds: 0 },
+      study: { running: false, startTime: null, totalSeconds: 0 }
     }
     this.loadState()
   }
@@ -21,10 +21,29 @@ class TimerService {
    */
   loadState() {
     const savedState = loadData(STORAGE_KEYS.TIMER_STATE, {
-      work: { running: false, startTime: null, totalMinutes: 0 },
-      study: { running: false, startTime: null, totalMinutes: 0 }
+      work: { running: false, startTime: null, totalSeconds: 0 },
+      study: { running: false, startTime: null, totalSeconds: 0 }
     })
+    // 兼容旧数据格式（totalMinutes）
+    if (savedState.work.totalMinutes !== undefined) {
+      savedState.work.totalSeconds = savedState.work.totalMinutes * 60
+      delete savedState.work.totalMinutes
+    }
+    if (savedState.study.totalMinutes !== undefined) {
+      savedState.study.totalSeconds = savedState.study.totalMinutes * 60
+      delete savedState.study.totalMinutes
+    }
     this.state = savedState
+    // 如果之前有运行中的计时器，不自动恢复，让用户手动控制
+    if (savedState.work.running && savedState.work.startTime) {
+      savedState.work.running = false
+      savedState.work.startTime = null
+    }
+    if (savedState.study.running && savedState.study.startTime) {
+      savedState.study.running = false
+      savedState.study.startTime = null
+    }
+    this.saveState()
   }
 
   /**
@@ -42,11 +61,17 @@ class TimerService {
       return false
     }
 
+    // 清除之前的定时器（如果有）
+    if (this.timers[type]) {
+      clearInterval(this.timers[type])
+      this.timers[type] = null
+    }
+
     this.state[type].running = true
-    this.state[type].startTime = getCurrentTimeInMinutes()
+    this.state[type].startTime = Date.now() // 使用时间戳（毫秒）
     this.saveState()
 
-    // 每秒更新一次（实际可以降低频率）
+    // 每秒更新一次
     this.timers[type] = setInterval(() => {
       this.updateTimer(type)
     }, 1000)
@@ -62,10 +87,10 @@ class TimerService {
       return false
     }
 
-    const endTime = getCurrentTimeInMinutes()
-    const duration = endTime - this.state[type].startTime
+    const endTime = Date.now()
+    const durationSeconds = Math.floor((endTime - this.state[type].startTime) / 1000)
     
-    this.state[type].totalMinutes += duration
+    this.state[type].totalSeconds += durationSeconds
     this.state[type].running = false
     this.state[type].startTime = null
     
@@ -75,7 +100,7 @@ class TimerService {
     }
 
     this.saveState()
-    return duration
+    return durationSeconds // 返回秒数
   }
 
   /**
@@ -90,22 +115,38 @@ class TimerService {
   }
 
   /**
-   * 获取当前总时间（分钟）
+   * 获取当前总时间（秒）
    */
-  getCurrentTotal(type) {
-    let total = this.state[type].totalMinutes
+  getCurrentTotalSeconds(type) {
+    let total = this.state[type].totalSeconds || 0
     if (this.state[type].running && this.state[type].startTime) {
-      const current = getCurrentTimeInMinutes()
-      total += current - this.state[type].startTime
+      const current = Date.now()
+      const elapsedSeconds = Math.floor((current - this.state[type].startTime) / 1000)
+      total += elapsedSeconds
     }
     return total
   }
 
   /**
-   * 获取格式化的总时间
+   * 获取当前总时间（分钟）- 用于兼容
+   */
+  getCurrentTotal(type) {
+    return this.getCurrentTotalSeconds(type) / 60
+  }
+
+  /**
+   * 获取格式化的总时间（小时格式）
    */
   getFormattedTotal(type) {
     return formatHours(this.getCurrentTotal(type))
+  }
+
+  /**
+   * 获取格式化的总时间（智能格式：秒/分钟/小时）
+   */
+  getFormattedTotalSmart(type) {
+    const totalSeconds = this.getCurrentTotalSeconds(type)
+    return formatTimeSmart(totalSeconds / 60)
   }
 
   /**
@@ -114,7 +155,7 @@ class TimerService {
   getState(type) {
     return {
       running: this.state[type].running,
-      total: this.getFormattedTotal(type)
+      total: this.getFormattedTotalSmart(type)
     }
   }
 
@@ -123,7 +164,7 @@ class TimerService {
    */
   resetTimer(type) {
     this.stopTimer(type)
-    this.state[type].totalMinutes = 0
+    this.state[type].totalSeconds = 0
     this.saveState()
   }
 }

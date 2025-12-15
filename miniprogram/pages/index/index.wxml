@@ -9,30 +9,36 @@
       </button>
     </view>
     <view class="card pixel-borders-inset">
-      <view class="grid grid-cols-2 gap-3 mb-3">
+      <view class="flex gap-2 mb-2">
         <!-- 工作时间 -->
-        <view class="bg-gray-100 p-2 text-center">
-          <text class="text-xs font-medium mb-1">工作时间</text>
-          <view class="text-xl font-bold text-primary mb-1">{{workTimeTotal}}h</view>
+        <view class="bg-gray-100 p-1 text-center flex-1" style="min-width: 0;">
+          <text class="text-xs font-medium mb-0 block">工作时间</text>
+          <view class="text-md font-bold text-primary mb-0">{{workTimeTotal}}</view>
           <view class="mt-1 flex flex-center">
-            <button class="btn btn-success btn-sm text-xs mr-1" bindtap="startWorkTimer" disabled="{{workTimerRunning}}">
+            <button class="btn btn-success btn-xs text-xs mr-0 {{workTimerRunning ? 'btn-disabled' : ''}}" bindtap="startWorkTimer" style="padding: 4rpx 8rpx; font-size: 18rpx;">
               开始
             </button>
-            <button class="btn btn-danger btn-sm text-xs" bindtap="stopWorkTimer" disabled="{{!workTimerRunning}}">
+            <button class="btn btn-danger btn-xs text-xs mr-0 {{!workTimerRunning ? 'btn-disabled' : ''}}" bindtap="stopWorkTimer" style="padding: 4rpx 8rpx; font-size: 18rpx;">
               结束
+            </button>
+            <button class="btn btn-warning btn-xs text-xs {{workTimerRunning ? 'btn-disabled' : ''}}" bindtap="resetWorkTimer" style="padding: 4rpx 8rpx; font-size: 18rpx;">
+              重置
             </button>
           </view>
         </view>
         <!-- 学习时间 -->
-        <view class="bg-gray-100 p-2 text-center">
-          <text class="text-xs font-medium mb-1">学习时间</text>
-          <view class="text-xl font-bold text-secondary mb-1">{{studyTimeTotal}}h</view>
+        <view class="bg-gray-100 p-1 text-center flex-1" style="min-width: 0;">
+          <text class="text-xs font-medium mb-0 block">学习时间</text>
+          <view class="text-md font-bold text-secondary mb-0">{{studyTimeTotal}}</view>
           <view class="mt-1 flex flex-center">
-            <button class="btn btn-success btn-sm text-xs mr-1" bindtap="startStudyTimer" disabled="{{studyTimerRunning}}">
+            <button class="btn btn-success btn-xs text-xs mr-0 {{studyTimerRunning ? 'btn-disabled' : ''}}" bindtap="startStudyTimer" style="padding: 4rpx 8rpx; font-size: 18rpx;">
               开始
             </button>
-            <button class="btn btn-danger btn-sm text-xs" bindtap="stopStudyTimer" disabled="{{!studyTimerRunning}}">
+            <button class="btn btn-danger btn-xs text-xs mr-0 {{!studyTimerRunning ? 'btn-disabled' : ''}}" bindtap="stopStudyTimer" style="padding: 4rpx 8rpx; font-size: 18rpx;">
               结束
+            </button>
+            <button class="btn btn-warning btn-xs text-xs {{studyTimerRunning ? 'btn-disabled' : ''}}" bindtap="resetStudyTimer" style="padding: 4rpx 8rpx; font-size: 18rpx;">
+              重置
             </button>
           </view>
         </view>
