@@ -1,16 +1,13 @@
 {
   "pages": [
-    "pages/index/index",
-    "pages/example/index"
+    "pages/index/index"
   ],
   "window": {
-    "backgroundColor": "#F6F6F6",
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#F6F6F6",
-    "navigationBarTitleText": "云开发 QuickStart",
-    "navigationBarTextStyle": "black"
+    "navigationBarTitleText": "任务管理",
+    "navigationBarBackgroundColor": "#a855c7",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f8e8ff"
   },
-  "sitemapLocation": "sitemap.json",
   "style": "v2",
-  "lazyCodeLoading": "requiredComponents"
+  "sitemapLocation": "sitemap.json"
 }

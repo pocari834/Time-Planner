@@ -1,6 +1,6 @@
 {
   "pages": [
-    "pages/index"
+    "pages/index/index"
   ],
   "window": {
     "navigationBarTitleText": "任务管理",
